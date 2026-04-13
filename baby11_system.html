@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 培育系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #f472b6; --pink-light: #fce7f3; --pink-dark: #be185d;
+  --gold: #f59e0b; --gold-light: #fef3c7;
+  --purple: #a78bfa; --purple-light: #ede9fe;
+  --green: #34d399; --green-light: #d1fae5;
+  --blue: #60a5fa; --blue-light: #dbeafe;
+  --bg: #fff9fb; --card: #ffffff; --text: #1f1235; --muted: #6b7280; --border: #fce7f3;
+}
+body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.app { max-width: 480px; margin: 0 auto; padding: 16px 16px 80px; }
+
+.header {
+  background: linear-gradient(135deg, #fce7f3 0%, #ede9fe 50%, #dbeafe 100%);
+  border-radius: 24px; padding: 20px; margin-bottom: 16px;
+  border: 1.5px solid #f9a8d4; position: relative; overflow: hidden;
+}
+.header::before {
+  content: ''; position: absolute; top: -20px; right: -20px;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(244,114,182,0.25) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.baby-label { font-size: 11px; font-weight: 800; color: var(--pink-dark); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.baby-age { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 2px; }
+.baby-age span { color: var(--pink); }
+.baby-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.stat-card { background: white; border-radius: 14px; padding: 10px; text-align: center; border: 1px solid rgba(244,114,182,0.2); }
+.stat-icon { font-size: 18px; margin-bottom: 2px; }
+.stat-val { font-size: 16px; font-weight: 900; color: var(--text); }
+.stat-lbl { font-size: 10px; color: var(--muted); font-weight: 700; }
+
+.coin-bar {
+  background: white; border-radius: 18px; padding: 14px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1.5px solid var(--gold-light);
+}
+.coin-left { display: flex; align-items: center; gap: 10px; }
+.coin-icon { font-size: 28px; }
+.coin-num { font-size: 28px; font-weight: 900; color: var(--gold); }
+.coin-lbl { font-size: 12px; color: var(--muted); font-weight: 700; }
+.redeem-btn {
+  background: linear-gradient(135deg, #f59e0b, #f97316); color: white; border: none;
+  border-radius: 12px; padding: 8px 16px; font-size: 13px; font-weight: 800; cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+}
+
+.nav-tabs { display: flex; background: white; border-radius: 14px; padding: 4px; gap: 4px; margin-bottom: 16px; border: 1.5px solid var(--border); }
+.nav-tab {
+  flex: 1; padding: 8px; border: none; border-radius: 10px; background: transparent;
+  font-size: 12px; font-weight: 800; color: var(--muted); cursor: pointer;
+  font-family: 'Nunito', sans-serif; text-align: center; transition: all 0.2s;
+}
+.nav-tab.active { background: linear-gradient(135deg, #fce7f3, #ede9fe); color: var(--pink-dark); }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.section-title { font-size: 13px; font-weight: 800; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; padding-left: 4px; }
+
+.progress-section { background: white; border-radius: 18px; padding: 16px; margin-bottom: 16px; border: 1.5px solid var(--border); }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progress-title { font-size: 14px; font-weight: 800; }
+.progress-count { font-size: 13px; color: var(--muted); font-weight: 700; }
+.progress-bar-bg { background: #f3f4f6; border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 6px; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #f472b6, #a78bfa); border-radius: 999px; transition: width 0.4s; }
+.progress-msg { font-size: 11px; color: var(--muted); }
+
+.task-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.task-card {
+  background: white; border-radius: 16px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1.5px solid var(--border); cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s;
+}
+.task-card:hover { transform: translateY(-1px); border-color: var(--pink); }
+.task-card.done { background: #f0fdf4; border-color: #86efac; }
+.task-emoji {
+  font-size: 24px; width: 46px; height: 46px;
+  background: var(--pink-light); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.task-card.done .task-emoji { background: var(--green-light); }
+.task-info { flex: 1; }
+.task-name { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.task-card.done .task-name { color: #16a34a; text-decoration: line-through; }
+.task-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.task-reward {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--gold-light); border-radius: 10px; padding: 5px 10px;
+  font-size: 13px; font-weight: 900; color: #92400e; flex-shrink: 0;
+}
+.task-card.done .task-reward { background: var(--green-light); color: #166534; }
+.check-circle {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid #d1d5db;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 12px; color: transparent; transition: all 0.2s;
+}
+.task-card.done .check-circle { background: #22c55e; border-color: #22c55e; color: white; }
+
+.sleep-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: linear-gradient(135deg, #fce7f3, #ede9fe);
+  border: 1.5px solid #f9a8d4; border-radius: 12px; padding: 6px 10px;
+  cursor: pointer; font-family: 'Nunito', sans-serif; flex-shrink: 0;
+  transition: transform 0.15s; min-width: 52px;
+}
+.sleep-btn:hover { transform: scale(1.06); }
+.sleep-btn:active { transform: scale(0.96); }
+.sleep-btn-plus { font-size: 18px; line-height: 1; color: var(--pink-dark); font-weight: 900; }
+.sleep-btn-count { font-size: 11px; font-weight: 900; color: var(--pink-dark); }
+.sleep-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: #fce7f3; border-radius: 6px; padding: 2px 6px;
+  font-size: 10px; font-weight: 800; color: var(--pink-dark); margin-left: 4px;
+}
+
+.rewards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.reward-card {
+  background: white; border-radius: 16px; padding: 14px 12px;
+  text-align: center; border: 1.5px solid var(--border); cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s; position: relative;
+}
+.reward-card:hover { transform: translateY(-2px); border-color: var(--gold); }
+.reward-card.owned { border-color: #86efac; background: #f0fdf4; }
+.reward-emoji { font-size: 30px; margin-bottom: 6px; }
+.reward-name { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.reward-cost { display: inline-flex; align-items: center; gap: 4px; background: var(--gold-light); border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 900; color: #92400e; }
+.reward-card.owned .reward-cost { background: var(--green-light); color: #166534; }
+.owned-badge { position: absolute; top: 8px; right: 8px; background: #22c55e; color: white; font-size: 10px; font-weight: 800; border-radius: 6px; padding: 2px 6px; }
+
+.milestone-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.milestone-row:last-child { border-bottom: none; }
+.milestone-dot { width: 12px; height: 12px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; }
+.milestone-dot.passed { background: var(--green); }
+.milestone-dot.current { background: var(--pink); box-shadow: 0 0 0 4px rgba(244,114,182,0.25); }
+.milestone-info { flex: 1; }
+.milestone-name { font-size: 13px; font-weight: 800; }
+.milestone-age { font-size: 11px; color: var(--muted); }
+.milestone-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: var(--pink-light); color: var(--pink-dark); }
+.milestone-badge.passed { background: var(--green-light); color: #166534; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: #1f1235; color: white; padding: 10px 20px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif;
+  opacity: 0; transition: transform 0.3s, opacity 0.3s; z-index: 100; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.coin-anim {
+  position: fixed; pointer-events: none; font-size: 22px; z-index: 200;
+  animation: floatUp 1s forwards;
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="baby-label">11 培育系統</div>
+    <div class="baby-age" id="ageDisplay">計算中...</div>
+    <div class="baby-sub">出生日期：2025年11月9日</div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val" id="daysOld">-</div>
+        <div class="stat-lbl">天數</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-val" id="streakCount">0</div>
+        <div class="stat-lbl">連續天</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-val" id="totalDone">0</div>
+        <div class="stat-lbl">已完成</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="coin-bar">
+    <div class="coin-left">
+      <div class="coin-icon">🪙</div>
+      <div>
+        <div class="coin-num" id="coinDisplay">0</div>
+        <div class="coin-lbl">金幣</div>
+      </div>
+    </div>
+    <button class="redeem-btn" onclick="switchTab('rewards')">兌換獎勵 ✨</button>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('tasks')">📋 今日任務</button>
+    <button class="nav-tab" onclick="switchTab('rewards')">🎁 獎勵商店</button>
+    <button class="nav-tab" onclick="switchTab('milestone')">🌱 成長里程</button>
+  </div>
+
+  <div class="panel active" id="panel-tasks">
+    <div class="progress-section">
+      <div class="progress-header">
+        <div class="progress-title">今日進度</div>
+        <div class="progress-count" id="progressCount">0 / 0</div>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-msg" id="progressMsg">完成任務獲得金幣吧！</div>
+    </div>
+    <div class="section-title">每日任務</div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <div class="panel" id="panel-rewards">
+    <div class="section-title">獎勵商店</div>
+    <div class="rewards-grid" id="rewardsGrid"></div>
+  </div>
+
+  <div class="panel" id="panel-milestone">
+    <div class="section-title">成長里程碑</div>
+    <div id="milestoneList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BIRTH = new Date('2025-11-09');
+const TODAY = new Date();
+
+function getAgeInfo() {
+  const diffMs = TODAY - BIRTH;
+  const diffDays = Math.floor(diffMs / 86400000);
+  const diffMonths = (TODAY.getFullYear() - BIRTH.getFullYear()) * 12 + (TODAY.getMonth() - BIRTH.getMonth());
+  const diffYears = TODAY.getFullYear() - BIRTH.getFullYear();
+  const adjYears = (TODAY < new Date(TODAY.getFullYear(), BIRTH.getMonth(), BIRTH.getDate())) ? diffYears - 1 : diffYears;
+  const adjMonths = Math.max(0, diffMonths);
+
+  let ageText, stage, stageKey;
+  if (diffDays < 0) {
+    ageText = `還有 ${-diffDays} 天出生`; stage = '等待中 🌸'; stageKey = 'prenatal';
+  } else if (diffDays <= 30) {
+    ageText = diffDays === 0 ? '今天出生！' : `出生第 ${diffDays} 天`; stage = '新生兒期 🍼'; stageKey = 'newborn';
+  } else if (adjMonths < 6) {
+    ageText = `${adjMonths} 個月大`; stage = '嬰兒前期 👶'; stageKey = 'infant_early';
+  } else if (adjMonths < 12) {
+    ageText = `${adjMonths} 個月大`; stage = '嬰兒後期 🌟'; stageKey = 'infant_late';
+  } else if (adjYears < 2) {
+    const m = adjMonths - 12;
+    ageText = `1 歲${m > 0 ? ' ' + m + ' 個月' : ''}`; stage = '學步兒 🐣'; stageKey = 'toddler_1';
+  } else if (adjYears < 3) {
+    ageText = `2 歲`; stage = '幼兒期 🌈'; stageKey = 'toddler_2';
+  } else {
+    ageText = `${adjYears} 歲`; stage = '兒童期 🧒'; stageKey = 'child';
+  }
+  return { diffDays, adjMonths, adjYears, ageText, stage, stageKey };
+}
+
+const TASK_DB = {
+  prenatal: [
+    { id:'p1', emoji:'🧘', name:'媽媽胎教音樂', desc:'播放古典或自然音樂30分鐘', reward:5 },
+    { id:'p2', emoji:'📖', name:'讀故事書', desc:'輕聲朗讀繪本給寶貝聽', reward:5 },
+    { id:'p3', emoji:'🌿', name:'散步呼吸新鮮空氣', desc:'輕鬆散步15-20分鐘', reward:5 },
+    { id:'p4', emoji:'💊', name:'補充營養品', desc:'按時服用孕期營養品', reward:8 },
+    { id:'p5', emoji:'✍️', name:'寫孕期日記', desc:'記錄今天的感受與期待', reward:6 },
+  ],
+  newborn: [
+    { id:'n1', emoji:'🍼', name:'餵11吃奶奶', desc:'每次餵奶記錄時間與量，奶量足夠最讚！', reward:10, repeatable:true },
+    { id:'n2', emoji:'🛁', name:'洗澡時間', desc:'輕柔幫11洗澡，保持清潔舒適', reward:8 },
+    { id:'n3', emoji:'🤱', name:'肌膚接觸', desc:'袋鼠式護理30分鐘', reward:10 },
+    { id:'n4', emoji:'😴', name:'哄睡', desc:'哼歌搖睡，每次成功哄睡都有獎勵', reward:6, repeatable:true },
+    { id:'n5', emoji:'📊', name:'記錄成長數據', desc:'量體重、記錄排便次數', reward:5 },
+  ],
+  infant_early: [
+    { id:'ie1', emoji:'🎵', name:'唱兒歌互動', desc:'唱3首以上兒歌，觀察反應', reward:8 },
+    { id:'ie2', emoji:'🌈', name:'視覺刺激訓練', desc:'用黑白圖卡或彩色玩具刺激視覺', reward:8 },
+    { id:'ie3', emoji:'💪', name:'趴趴時間', desc:'讓寶貝趴著訓練頸部力量10分鐘', reward:10 },
+    { id:'ie_milk', emoji:'🍼', name:'餵11吃奶奶', desc:'每次餵奶都記錄，補充充足營養', reward:10, repeatable:true },
+    { id:'ie4', emoji:'🛁', name:'洗澡時間', desc:'輕柔幫11洗澡，可以玩水囉', reward:8 },
+    { id:'ie5', emoji:'📖', name:'親子共讀', desc:'讀圖畫書，描述畫面給寶貝聽', reward:6 },
+    { id:'ie6', emoji:'🌡️', name:'健康記錄', desc:'記錄體溫、飲食、睡眠狀況', reward:5 },
+    { id:'ie_sleep', emoji:'😴', name:'哄睡', desc:'輕拍搖籃、哼歌，每次成功哄睡都有獎勵', reward:8, repeatable:true },
+  ],
+  infant_late: [
+    { id:'il1', emoji:'🪀', name:'抓握練習', desc:'讓寶貝抓各種不同質感玩具', reward:8 },
+    { id:'il2', emoji:'🗣️', name:'說話互動', desc:'多對寶貝說話，等待回應', reward:8 },
+    { id:'il_milk', emoji:'🍼', name:'餵11吃奶奶', desc:'每次餵奶記錄，持續補充母乳或配方奶', reward:10, repeatable:true },
+    { id:'il3', emoji:'🥣', name:'餵11吃副食品', desc:'每次嘗試新食材都記錄，拒絕也沒關係！', reward:12, repeatable:true },
+    { id:'il4', emoji:'🧸', name:'玩具探索', desc:'讓寶貝自由探索安全玩具', reward:6 },
+    { id:'il_bath', emoji:'🛁', name:'洗澡時間', desc:'玩水超開心！幫11好好洗個澡', reward:8 },
+    { id:'il5', emoji:'🎶', name:'音樂律動', desc:'隨音樂輕搖寶貝，培養節奏感', reward:8 },
+    { id:'il6', emoji:'📸', name:'拍攝成長紀錄', desc:'拍下今天的可愛瞬間', reward:5 },
+    { id:'il_sleep', emoji:'😴', name:'哄睡', desc:'輕搖入睡，每次成功哄睡都有獎勵', reward:8, repeatable:true },
+  ],
+  toddler_1: [
+    { id:'t1a', emoji:'👣', name:'學步練習', desc:'扶著走路，練習平衡10-15分鐘', reward:12 },
+    { id:'t1_milk', emoji:'🍼', name:'餵11吃奶奶', desc:'睡前或按時補充奶奶，每次都有獎', reward:8, repeatable:true },
+    { id:'t1_solid', emoji:'🥣', name:'餵11吃副食品', desc:'每餐記錄一次，吃多吃少都加油！', reward:12, repeatable:true },
+    { id:'t1b', emoji:'🍎', name:'多元飲食紀錄', desc:'記錄今天吃了哪些新食物', reward:6 },
+    { id:'t1c', emoji:'📚', name:'指字閱讀', desc:'指著書上圖案說名字5分鐘', reward:8 },
+    { id:'t1d', emoji:'🎨', name:'塗鴉時間', desc:'提供安全蠟筆自由塗鴉', reward:10 },
+    { id:'t1_bath', emoji:'🛁', name:'洗澡時間', desc:'幫11洗香香，玩水超開心', reward:8 },
+    { id:'t1f', emoji:'🌳', name:'戶外探索', desc:'到公園玩沙或觀察自然', reward:10 },
+    { id:'t1_sleep', emoji:'😴', name:'哄睡', desc:'說故事或輕拍入睡，每次成功都有獎勵', reward:10, repeatable:true },
+  ],
+  toddler_2: [
+    { id:'t2a', emoji:'🗣️', name:'說話練習', desc:'鼓勵說完整句子，耐心聆聽', reward:10 },
+    { id:'t2_solid', emoji:'🥣', name:'餵11吃副食品', desc:'每餐好好吃，記錄每次進食', reward:10, repeatable:true },
+    { id:'t2b', emoji:'🧩', name:'拼圖遊戲', desc:'玩4-6片拼圖，培養邏輯', reward:10 },
+    { id:'t2c', emoji:'🖌️', name:'創意美術', desc:'水彩或黏土自由創作', reward:10 },
+    { id:'t2d', emoji:'🚴', name:'大肌肉活動', desc:'跑步、跳躍、攀爬遊戲20分鐘', reward:10 },
+    { id:'t2_bath', emoji:'🛁', name:'洗澡時間', desc:'好好幫11洗澡，準備舒舒服服睡覺', reward:8 },
+    { id:'t2f', emoji:'👫', name:'社交遊戲', desc:'與同齡孩子一起玩，練習分享', reward:12 },
+    { id:'t2_sleep', emoji:'😴', name:'哄睡', desc:'睡前故事後輕拍入睡，每次成功都有獎勵', reward:10, repeatable:true },
+  ],
+  child: [
+    { id:'c1', emoji:'📖', name:'閱讀時間', desc:'自主閱讀或親子共讀20分鐘', reward:10 },
+    { id:'c2', emoji:'✏️', name:'寫字/畫畫練習', desc:'練習筆畫或自由創作', reward:10 },
+    { id:'c_solid', emoji:'🥣', name:'餵11吃副食品', desc:'好好用餐，記錄每次進食狀況', reward:10, repeatable:true },
+    { id:'c3', emoji:'🏃', name:'戶外運動', desc:'跑步、騎車或球類活動30分鐘', reward:12 },
+    { id:'c4', emoji:'🎮', name:'益智遊戲', desc:'桌遊、積木或邏輯遊戲30分鐘', reward:10 },
+    { id:'c_bath', emoji:'🛁', name:'洗澡時間', desc:'洗香香準備睡覺，保持好習慣', reward:8 },
+    { id:'c5', emoji:'🤗', name:'情緒表達練習', desc:'聊聊今天發生了什麼，表達感受', reward:8 },
+    { id:'c6', emoji:'🧹', name:'小小幫手', desc:'讓寶貝幫忙簡單家事培養責任感', reward:10 },
+    { id:'c_sleep', emoji:'😴', name:'哄睡', desc:'陪伴入睡，每次成功哄睡都有獎勵', reward:8, repeatable:true },
+  ],
+};
+
+const REWARDS = [
+  { id:'r1', emoji:'🎪', name:'去遊樂園一次', cost:150 },
+  { id:'r2', emoji:'🍦', name:'吃冰淇淋甜點', cost:60 },
+  { id:'r3', emoji:'🧸', name:'買一個新玩具', cost:120 },
+  { id:'r4', emoji:'🎬', name:'看一部喜歡的電影', cost:75 },
+  { id:'r5', emoji:'🏖️', name:'去海邊玩一天', cost:240 },
+  { id:'r6', emoji:'📚', name:'買一本新繪本', cost:45 },
+  { id:'r7', emoji:'🍕', name:'吃最喜歡的食物', cost:60 },
+  { id:'r8', emoji:'🎁', name:'驚喜禮物一份', cost:180 },
+];
+
+const MILESTONES = [
+  { name:'出生', ageMonths:0, emoji:'👶' },
+  { name:'第一次微笑', ageMonths:2, emoji:'😊' },
+  { name:'趴著抬頭', ageMonths:3, emoji:'💪' },
+  { name:'翻身', ageMonths:4, emoji:'🔄' },
+  { name:'坐起來', ageMonths:6, emoji:'🪑' },
+  { name:'爬行', ageMonths:8, emoji:'🐛' },
+  { name:'站立扶物', ageMonths:9, emoji:'🏋️' },
+  { name:'說第一個字', ageMonths:10, emoji:'🗣️' },
+  { name:'學步走路', ageMonths:12, emoji:'👣' },
+  { name:'說兩個字詞', ageMonths:18, emoji:'💬' },
+  { name:'跑步跳躍', ageMonths:24, emoji:'🏃' },
+  { name:'說完整句子', ageMonths:30, emoji:'📢' },
+  { name:'自己穿衣服', ageMonths:36, emoji:'👕' },
+];
+
+function getStorage() {
+  try {
+    const raw = localStorage.getItem('baby11_data');
+    const d = raw ? JSON.parse(raw) : {};
+    return {
+      coins: d.coins || 0,
+      doneTasks: d.doneTasks || {},
+      sleepCounts: d.sleepCounts || {},
+      ownedRewards: d.ownedRewards || [],
+      streak: d.streak || 0,
+      lastDate: d.lastDate || '',
+      totalDone: d.totalDone || 0
+    };
+  } catch { return { coins:0, doneTasks:{}, sleepCounts:{}, ownedRewards:[], streak:0, lastDate:'', totalDone:0 }; }
+}
+function saveStorage(d) { try { localStorage.setItem('baby11_data', JSON.stringify(d)); } catch {} }
+
+let state = getStorage();
+const info = getAgeInfo();
+const todayKey = TODAY.toISOString().slice(0,10);
+if (!state.doneTasks[todayKey]) state.doneTasks[todayKey] = [];
+
+function getTasks() { return TASK_DB[info.stageKey] || TASK_DB['newborn']; }
+
+function getRegularTasks() { return getTasks().filter(t => !t.repeatable); }
+
+function render() {
+  const tasks = getTasks();
+  const regularTasks = getRegularTasks();
+  const done = state.doneTasks[todayKey] || [];
+  document.getElementById('ageDisplay').innerHTML = `<span>${info.ageText}</span>　${info.stage}`;
+  document.getElementById('daysOld').textContent = info.diffDays >= 0 ? info.diffDays : 0;
+  document.getElementById('streakCount').textContent = state.streak || 0;
+  document.getElementById('totalDone').textContent = state.totalDone || 0;
+  document.getElementById('coinDisplay').textContent = state.coins;
+
+  const donedRegular = done.filter(id => regularTasks.find(t => t.id === id));
+  const pct = regularTasks.length > 0 ? Math.round((donedRegular.length / regularTasks.length) * 100) : 0;
+  document.getElementById('progressCount').textContent = `${donedRegular.length} / ${regularTasks.length}`;
+  document.getElementById('progressFill').style.width = pct + '%';
+  const msgs = ['完成任務獲得金幣吧！', '繼續加油！', '快完成了！', '今日任務全部完成！太棒了！🎉'];
+  document.getElementById('progressMsg').textContent = msgs[pct === 0 ? 0 : pct < 50 ? 1 : pct < 100 ? 2 : 3];
+
+  document.getElementById('taskList').innerHTML = tasks.map(t => {
+    const isDone = done.includes(t.id);
+    if (t.repeatable) {
+      const cnt = (state.sleepCounts[todayKey] && state.sleepCounts[todayKey][t.id]) || 0;
+      return `<div class="task-card" style="border-color:#f9a8d4;">
+        <div class="task-emoji">${t.emoji}</div>
+        <div class="task-info">
+          <div class="task-name">${t.name} <span class="sleep-tag">每次有獎</span></div>
+          <div class="task-desc">${t.desc}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div class="task-reward">🪙${t.reward}</div>
+          <button class="sleep-btn" onclick="addSleep('${t.id}',${t.reward})">
+            <span class="sleep-btn-plus">+</span>
+            <span class="sleep-btn-count">${cnt > 0 ? cnt + '次' : '記錄'}</span>
+          </button>
+        </div>
+      </div>`;
+    }
+    return `<div class="task-card ${isDone ? 'done' : ''}" onclick="toggleTask('${t.id}',${t.reward})">
+      <div class="task-emoji">${t.emoji}</div>
+      <div class="task-info">
+        <div class="task-name">${t.name}</div>
+        <div class="task-desc">${t.desc}</div>
+      </div>
+      <div class="task-reward">🪙${t.reward}</div>
+      <div class="check-circle">${isDone ? '✓' : ''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rewardsGrid').innerHTML = REWARDS.map(r => {
+    const owned = state.ownedRewards.includes(r.id);
+    return `<div class="reward-card ${owned ? 'owned' : ''}" onclick="redeemReward('${r.id}',${r.cost},'${r.name}')">
+      ${owned ? '<div class="owned-badge">已兌換</div>' : ''}
+      <div class="reward-emoji">${r.emoji}</div>
+      <div class="reward-name">${r.name}</div>
+      <div class="reward-cost">🪙 ${owned ? '已擁有' : r.cost}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('milestoneList').innerHTML = MILESTONES.map(m => {
+    const passed = info.adjMonths > m.ageMonths;
+    const current = info.adjMonths === m.ageMonths;
+    return `<div class="milestone-row">
+      <div class="milestone-dot ${passed ? 'passed' : current ? 'current' : ''}"></div>
+      <div class="milestone-info">
+        <div class="milestone-name">${m.emoji} ${m.name}</div>
+        <div class="milestone-age">${m.ageMonths === 0 ? '出生時' : m.ageMonths < 12 ? `約 ${m.ageMonths} 個月` : `約 ${Math.floor(m.ageMonths/12)} 歲`}</div>
+      </div>
+      <div class="milestone-badge ${passed ? 'passed' : ''}">${passed ? '已達成' : current ? '現在' : '期待中'}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTask(id, reward) {
+  const done = state.doneTasks[todayKey];
+  const idx = done.indexOf(id);
+  if (idx === -1) {
+    done.push(id);
+    state.coins += reward;
+    state.totalDone = (state.totalDone || 0) + 1;
+    showCoinAnim(reward);
+    showToast(`+${reward} 金幣！很棒！🎉`);
+  } else {
+    done.splice(idx, 1);
+    state.coins = Math.max(0, state.coins - reward);
+    showToast('取消完成');
+  }
+  saveStorage(state); render();
+}
+
+function addSleep(id, reward) {
+  if (!state.sleepCounts[todayKey]) state.sleepCounts[todayKey] = {};
+  state.sleepCounts[todayKey][id] = (state.sleepCounts[todayKey][id] || 0) + 1;
+  state.coins += reward;
+  state.totalDone = (state.totalDone || 0) + 1;
+  saveStorage(state); render();
+  showCoinAnim(reward);
+  const cnt = state.sleepCounts[todayKey][id];
+  const tasks = getTasks();
+  const task = tasks.find(t => t.id === id);
+  const name = task ? task.name : '';
+  let msg;
+  if (name.includes('奶奶')) msg = `餵奶第 ${cnt} 次！+${reward} 金幣 🍼`;
+  else if (name.includes('副食品')) msg = `副食品第 ${cnt} 次！+${reward} 金幣 🥣`;
+  else msg = `哄睡第 ${cnt} 次！+${reward} 金幣 😴✨`;
+  showToast(msg);
+}
+
+function redeemReward(id, cost, name) {
+  if (state.ownedRewards.includes(id)) { showToast('已兌換過這個獎勵了！'); return; }
+  if (state.coins < cost) { showToast(`金幣不足！還需要 ${cost - state.coins} 枚 🪙`); return; }
+  state.coins -= cost;
+  state.ownedRewards.push(id);
+  saveStorage(state); render();
+  showToast(`兌換成功：${name} 🎁`);
+}
+
+function switchTab(tab) {
+  const tabs = ['tasks','rewards','milestone'];
+  document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', tabs[i] === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function showCoinAnim(amount) {
+  const el = document.createElement('div');
+  el.className = 'coin-anim'; el.textContent = `🪙+${amount}`;
+  el.style.left = (Math.random() * 60 + 20) + '%'; el.style.bottom = '80px';
+  document.body.appendChild(el); setTimeout(() => el.remove(), 1000);
+}
+
+render();
+</script>
+</body>
+</html>
